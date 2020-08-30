@@ -5,7 +5,13 @@ from sqlalchemy import create_engine
 
 
 def load_data(messages_filepath, categories_filepath):
-    
+    """
+    Load data from given files 
+    input:
+        messages_filepath, categories_filepath
+    outputs:
+        Dataframe 
+    """    
     # load messages dataset
     messages = pd.read_csv(messages_filepath)
 
@@ -21,6 +27,13 @@ def load_data(messages_filepath, categories_filepath):
 
 
 def clean_data(df):
+    """
+    Split catefories column into a single column per category 
+    input:
+        df: dataframe
+    outputs:
+        cleaned Dataframe 
+    """ 
     categories = df['categories'].str.split(";",36,expand = True)
     row = categories.head(1)
 
@@ -44,6 +57,13 @@ def clean_data(df):
     return df
 
 def save_data(df, database_filename):
+    """
+    Save the data from into database  
+    input:
+        df: data frame, database_file naem 
+    outputs:
+        NONE
+    """ 
     #engine = create_engine('sqlite:///data/YourDatabaseName.db')
     engine = create_engine('sqlite:///'+database_filename)
     df.to_sql('CategorizedMessages', engine, index=False)

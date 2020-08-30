@@ -9,16 +9,25 @@ from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 from sklearn.multioutput import MultiOutputClassifier
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import GridSearchCV
+
 from nltk.corpus import stopwords
 from nltk.stem.wordnet import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
+
 import pickle
 from sklearn.metrics import classification_report
 
 
 
-
 def load_data(database_filepath):
+    """
+    Load data from database
+    input:
+        database file path
+    outputs:
+        category_names: categories names from the dataframe, X: text messages from the dataframe, Y: column names (categories)
+    """
     # load data from database
     engine = create_engine('sqlite:///'+database_filepath)
 
@@ -34,14 +43,17 @@ def load_data(database_filepath):
 
 
 def tokenize(text):
-    text = re.sub(r"[^a-zA-Z0-9]", " ", text.lower())
-    
-    #words = [w for w in words if w not in stopwords.words("english")]
+    """
+    Split the text into list and remove unnessary elements 
+    input:
+        text 
+    outputs:
+        tokenized list of the given text
+    """ 
+   
     stop_words = stopwords.words("english")
     lemmatizer = WordNetLemmatizer()
     
-
-    return word_tokenize(text)
 
     # normalize case and remove punctuation
     text = re.sub(r"[^a-zA-Z0-9]", " ", text.lower())
@@ -56,16 +68,39 @@ def tokenize(text):
 
 
 def build_model():
+    """
+    Build the model and fine tune the grid search 
+    input:
+        NONE 
+    outputs:
+        A model
+    """ 
     pipeline = Pipeline([
         ('vect', CountVectorizer(tokenizer=tokenize)),
         ('tfidf', TfidfTransformer()),
         ('clf', MultiOutputClassifier(RandomForestClassifier()))
     ])
+    
+    parameters = {
+        'clf__estimator__max_depth': [25, 100, 200],
+#        'tfidf__use_idf': (True, False),
+#        'clf__estimator__n_estimators': [50, 100],
+        'clf__estimator__criterion': ['entropy', 'gini']
+    }
 
-    return pipeline
+    cv = GridSearchCV(pipeline, param_grid=parameters)
+
+    return cv
 
 
 def evaluate_model(model, X_test, Y_test, category_names):
+    """
+    Evaluate the built in model
+    input:
+        mode: model to be tested. X_test, Y_test, category_names  
+    outputs:
+        NONE - print the classification report 
+    """ 
     Y_pred = model.predict(X_test)
 
     for i in range(len(category_names)):
@@ -73,7 +108,15 @@ def evaluate_model(model, X_test, Y_test, category_names):
                                               classification_report(Y_test.iloc[:, i].values, Y_pred[:, i])))  
 
 
+
 def save_model(model, model_filepath):
+    """
+    Save the model in the provided path 
+    input:
+        model, model_filepath along with the file name
+    outputs:
+        NONE - file get created
+    """    
     pickle.dump(model, open(model_filepath, "wb"))
 
 def main():
