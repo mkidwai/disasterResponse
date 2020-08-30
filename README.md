@@ -1,6 +1,10 @@
 # Disaster Response Pipeline Project
 
-### Instructions:
+### Project summary:
+Thia project contains a program that goes through a database that has categorized messages and learn from it for future message analysis
+It analayzes the entered message message highlights the applicable categories it belong to.
+
+### Instructions to run the file:
 1. Run the following commands in the project's root directory to set up your database and model.
 
     - To run ETL pipeline that cleans data and stores in database
